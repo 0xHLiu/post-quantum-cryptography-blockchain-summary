@@ -15,11 +15,11 @@ Approach:
 2. To build this test out the fastest way possible, we looked for open source implementations of FALCON and Ethereum. There is a popular open-source Rust version of the Ethereum execution client we used, called rETH (https://reth.rs/). There is also an open-source Rust version of FALCON (https://docs.rs/falcon-rust/latest/falcon_rust/) as well as a python version (https://github.com/tprest/falcon.py)
     - We used rETH in order to isolate out the use cases of ECDSA to know what we had to replace with FALCON
     - We saw that we needed to implement a public-key recovery version of FALCON in order to make it compatible with rETH, as Ethereum uses a public-key recovery version of ECDSA in order to minimize storage requirements. The public-key recovery version of FALCON isn't available within either open-source FALCON implementations, so we coded that version.
-        - First we implemented public-key recovery FALCON in python to make sure it worked properly. This was done on "falcon.py/Example.ipynb" (see submodule), which is a fork of the python implementation of FALCON (https://github.com/tprest/falcon.py).
+        - First we implemented public-key recovery FALCON in python to make sure it worked properly. This was done on "[falcon.py/Example.ipynb](https://github.com/0xHLiu/falcon.py/blob/db104e25e617392ad60981dfdfb8ba817d55e935/Example.ipynb)" (see submodule), which is a fork of the python implementation of FALCON (https://github.com/tprest/falcon.py).
             - We ensured that it worked by running FALCON in a small test case (n=2) to check the calculations by hand
             - Then we ran it over 100 times to ensure that the implementation never failed
-            - This was done mainly to the sign_pk_recovery(sk, message, randombytes=urandom) and verify_pk_recovery(sk, pk, message, signature) functions in "falcon.py/Example.ipynb"
-        - After ensuring that the python implementation was correct, we implemented it in Rust. We mainly worked on "pq-ec-cryptography-benchmarks/falcon-rust/src/falcon.rs" (see submodule), which is a fork of the Rust implementation of FALCON (https://github.com/aszepieniec/falcon-rust).
+            - This was done mainly to the sign_pk_recovery(sk, message, randombytes=urandom) and verify_pk_recovery(sk, pk, message, signature) functions in "[falcon.py/Example.ipynb](https://github.com/0xHLiu/falcon.py/blob/db104e25e617392ad60981dfdfb8ba817d55e935/Example.ipynb)"
+        - After ensuring that the python implementation was correct, we implemented it in Rust. We mainly worked on "[pq-ec-cryptography-benchmarks/falcon-rust/src/falcon.rs](https://github.com/0xHLiu/pq-ec-cryptography-benchmarks/blob/53f06c2f0517f14753ebde3d5ef9d7a1a190cf98/falcon-rust/src/falcon.rs)" (see submodule), which is a fork of the Rust implementation of FALCON (https://github.com/aszepieniec/falcon-rust).
             - You can find the altered portions by looking for "#[cfg(feature = "pk_recovery_mode")]", which means that when we turn on the configuration to use public-key recovery mode, that code is then used
             - Within the PublicKey Struct, we changed the function to generate the secret key
                 - pub fn from_secret_key(sk: &SecretKey<N>) -> Self
@@ -30,7 +30,7 @@ Approach:
                 - pub fn verify<const N: usize>(m: &[u8], sig: &Signature<N>, pk: &PublicKey<N>) -> bool
             - Lastly we built custom tests to ensure that it all worked correctly. We took examples from the python implementation that worked correctly and pasted them into Rust. You can find the tests for this by looking for "#[test]"
         - Now, the rust implementation of public-key recovery FALCON is working correctly. This would be the version of FALCON that would be plugged into rETH if the function runtimes isn't 10x slower than that of ECDSA and if the storage requirements isn't 10x larger
-3. We wrote a benchmark test for our pk-recovery version of FALCON and for ECDSA to compare the function runtimes. This is done in "pq-ec-cryptography-benchmarks/benchmark/benches" (see submodules).
+3. We wrote a benchmark test for our pk-recovery version of FALCON and for ECDSA to compare the function runtimes. This is done in "[pq-ec-cryptography-benchmarks/benchmark/benches](https://github.com/0xHLiu/pq-ec-cryptography-benchmarks/tree/53f06c2f0517f14753ebde3d5ef9d7a1a190cf98/benchmark/benches)" (see submodules).
     - This is done using the crate, "criterion" (https://bheisler.github.io/criterion.rs/book/analysis.html)
     - The benchmarking worked in 4 steps:
     1. Warmup: The functions are run a few times to warmup the cache
@@ -39,4 +39,4 @@ Approach:
     4. Comparison: The results of the function execution time get compared to the execution time measured before in previous benchmark runs if the benchmark has been run previously.
     - The results were that pk-recovery FALCON is 3x slower in signature verification than ECDSA, and that is the bottleneck function in public blockchains. Also, pk-recovery FALCON is 28x slower and 22,000x slower in signature generation and key generation compared to ECDSA, but those functions aren't run as often and aren't as impactful as signature verification speeds for a well functioning blockchain.
 4. The storage requirement changes for pk-recovery FALCON was estimated by looking at the signature sizes, which would need to be stored on-chain, along with how much of the storage in blockchains are taken up by transaction signatures. From this, we determined that block sizes would increase about 4-fold, meaning that a blockchain would be 4-times larger.
-5. We posted the results, data, and figures in "PQ_Thesis_Results" (see submodule).
+5. We posted the results, data, and figures in "[PQ_Thesis_Results](https://github.com/0xHLiu/PQ_Thesis_Results/tree/f928bcda5d2a11f19a9742a4ff9dac65a2dd8ab7)" (see submodule).
