@@ -1,0 +1,9 @@
+[submodule "pq-ec-cryptography-benchmarks"]
+	path = pq-ec-cryptography-benchmarks
+	url = git@github.com:0xHLiu/pq-ec-cryptography-benchmarks.git
+[submodule "PQ_Thesis_Results"]
+	path = PQ_Thesis_Results
+	url = git@github.com:0xHLiu/PQ_Thesis_Results.git
+[submodule "falcon.py"]
+	path = falcon.py
+	url = git@github.com:0xHLiu/falcon.py.git
